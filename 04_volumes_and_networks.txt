@@ -1,0 +1,49 @@
+Volumes and Networks
+
+1. Before we start, you should know one more use case of Docker
+2. Docker is used to run DBs/Redis/Auxilary services locally
+3. This is useful so we don't pollute our filesystem with unnecessary dependencies
+4. We can bring up and down DBs/Redis/Kafka and clean out our machine
+
+There are problems here:
+1. We want local databases to retain information across restarts (Volumes)
+2. We want to allow one docker container to talk to another docker container (Networks)
+
+Volumes
+1. Used for persisting data across starts
+2. Specifically useful for things like databases
+
+How?
+Create a voulme: 'docker volume create volume_database'
+run a db container with its data mounted to above voulme: 'docker run -v volume_database:/data/db -p 27017:27017 mongo'
+
+Note: /data/db is for mongo db as it stores its data inside this directory
+
+docker kill <container_id> // container will be stopped but data persists, i.e., if u run it again mounted to same volume, data will be there
+
+docker volume rm volume_database // Now the data is gone
+
+
+Networks:
+
+Problem: If u run two docker containers say nodejs app(exposing port 3000) and mongo db(exposing port 27017), they can't connect to each other.
+          Although u can connect to them both externally, ex. u can connect to nodejs app through browser and the mongo db through mongo compass
+          or even u can run nodejs app locally without docker and connect to mongodb container
+          but u cant connect one container to another
+
+Reason: Containers have their own network which localhost is a container points to same container not the machine
+        So if u try to go to localhost:27017 in a nodejs app container, it will try to find it inside its own container
+
+So we need to create a network between the containers
+
+Create a network" 'docker network create my_network'
+
+Now, run a container: 'docker run -p 3000:3000 --name my_backend --network my_network <image_tag>'
+Run another container: 'docker run -v volume_database:/data/db --name my_mongo --network my_network -p 27017:27017 mongo'
+
+We need to give name to each container to identify them in the network created.
+
+Now replace the db url in the nodejs app from 'localhost:27017' to 'my_mongo:27017'
+
+backend doesnt need to have a name
+
