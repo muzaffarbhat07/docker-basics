@@ -1,0 +1,66 @@
+Creating Images:
+
+create a Dockerfile as per your config: 
+ex: for nodejs app
+```bash
+FROM node:20
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN npm install
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
+```
+
+Create Image:
+```bash
+sudo docker build . -t test_app
+```
+
+To check whether the image has been built or not:
+```bash
+sudo docker images
+```
+
+To run:
+```bash
+sudo docker run test_app
+```
+
+App will run, but still you cant access the end-points. It exposes port 3000 but the machine doesn't know whom to pass the 3000 requests as there might be multiples processes listening on 3000
+So we need to run following:
+```bash
+sudo docker run -p 3000:3000 test_app
+```
+
+This is port mapping, which means 3000 port of the machine should forward all requests to 3000 port of this container
+Now go to localhost:3000
+
+To check if the image has started and the container is running, open the new terminal:
+```bash
+sudo docker ps
+```
+
+Pushing images to docker hub:
+```
+1. Sign up to docker hub
+2. Create an empty repository like github
+3. Create an image tagged with '<docker_hub_username>/<docker_hub_repo_name>'
+4. login to docker in your cli: 'sudo docker login'
+4. Push the image: 'sudo docker push <docker_hub_username>/<docker_hub_repo_name>'
+5. Done, now any one can pull it on their machine(or aws machine) and run it. 
+```
+
+Pulling and running on any other machine, here aws machine
+```
+1. Log in to aws machine and install
+2. Pull docker image: 'sudo docker pull <docker_hub_username>/<docker_hub_repo_name>'
+3. Run: 'sudo docker run <docker_hub_username>/<docker_hub_repo_name>' or 'sudo docker run -p 3000:3000 <docker_hub_username>/<docker_hub_repo_name>' in our case
+```
+
+@ TODO1: Figure out the way to minimize docker build time
+@ TODO2: Figure outh the way to reduce size of the image
