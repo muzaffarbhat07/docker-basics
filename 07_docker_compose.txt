@@ -1,0 +1,69 @@
+The problem: 
+A project has a lot of auxillary services it needs to use
+For example mongodb, postgres, kafka, mysql
+Do we need create separate containers for each in separate terminals?
+
+Actually this can be the solution, but it is a bad one.
+Bad Solution:
+Run multiple docker run commands
+You can run them in multiple terminals, or use detached mode
+
+Detached mode: run in background, add -d flag in the run command. In this way, terminal will be freed.
+
+
+Good Solution: Docker compose
+Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a
+YAML file to configure your application's services. Then, with a single command, you create and start all the
+services from your configuration.
+
+Example JSON file:
+```bash
+{
+  "services": {
+    "mongodb": {
+      "image": "mongo:latest",
+      "ports": ["27017:27017"]
+    },
+    "mysql": {
+      "image": "mysql:latest",
+      "environment": {
+        "MYSQL_ROOT_PASSWORD": "rootpass"
+      },
+      "ports": ["3306:3306"]
+    },
+    "custom_app": {
+      "build": "./Dockerfile",
+      "ports": ["3000:3000"]
+    }
+  }
+}
+```
+
+YAML file of above:
+```bash
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017-27017"
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306-3306"
+  custom_app:
+    build: ./
+    ports:
+      - "3000-3000"
+```
+
+command to run: 'docker-compose up'
+
+
+NOTE: Special thing about compose is that it creates network itself automatically.
+      That means all the containers/services can connect to each other
+  
+'volumes' need to be added just as we add 'ports' and also need to add the 'volumes' at the end
+
+Command to run a different compose file: 'docker-compose up -f <file_name>'
