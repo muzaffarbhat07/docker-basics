@@ -1,0 +1,76 @@
+Consider the Dockerfile below: 
+
+```bash
+FROM node:20
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN npm install
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
+```
+
+
+Docker creates layers for each image creation step
+```bash
+FROM node:20              --------- > layer 1
+
+WORKDIR /usr/src/app      ----------> layer 2
+
+COPY . .                  ----------> layer 3
+
+RUN npm install           ----------> layer 4
+```
+
+Why Layers?
+
+1. Caching
+2. Re-using layers
+3. Faster build times
+
+Each layer is cached so that it can be re-used next time, no need to build again if there's no change
+
+If there is any change in any step/layer, all steps/layers after it(including it) are built again
+
+Now, we can optimize build time like below: // @ TODO1: Figure out the way to minimize docker build time
+```bash
+FROM node:20
+
+WORKDIR /usr/src/app
+
+COPY package* .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
+```
+
+Reason: package.json does not change very often, so npm install will also be cached if any other code changes.
+
+
+We can also reduce build size like below: // @ TODO2: Figure outh the way to reduce size of the image
+```bash
+FROM mhart/alpine-node
+
+WORKDIR /usr/src/app
+
+COPY package* .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
+```
+
+Reason: alpine versions are much more lightweight
