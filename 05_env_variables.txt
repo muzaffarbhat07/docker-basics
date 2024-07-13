@@ -1,0 +1,3 @@
+How to pass env variables:
+
+'docker run -p 3000:3000 -e MONGO_URI=mongodb://my_mongo:27017 <image_tag>'

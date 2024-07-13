@@ -1,0 +1,66 @@
+What if we want to run our code differrently in dev env and prod env
+e.x., we want hot reload(nodemon) in dev environment but not in production.
+
+Lets check our Dockerfile:
+```bash
+FROM node:20
+
+WORKDIR /usr/src/app
+
+COPY package* .
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
+```
+
+Lets add two scripts in our package.json:
+"start": "node index.js",
+"dev": "nodemon index.js"
+
+Now we can do 'npm run dev" in dev env and "npm run start" in prod env.
+But how?
+
+1. First, we need to modify Dockerfile:
+```bash
+FROM node:20 AS base
+WORKDIR /usr/src/app
+COPY package* .
+RUN npm install
+
+FROM base AS development
+COPY . .
+CMD ["npm", "run", "dev"]
+
+
+FROM base AS production
+COPY . .
+RUN npm prune --production
+CMD ["npm", "run", "start"]
+```
+
+2. Create dev image:
+'docker build . --target development -t app:dev'
+
+3. Create dev image:
+'docker build . --target production -t app:prod'
+
+4. Now, we can run them separately
+
+
+
+//Go inside the container
+'docker exec -it <container_id>'
+
+
+Problem:
+If u run app:dev container, then change index.js container doesnot reload
+Reason: Because once the image is built, it has no connection with the original files now. Everything is copied inside image and from that container is created
+
+Solution: volumes
+cmd: 'docker run -v .:/usr/src/app app:dev'
+where '-v .:/usr/src/app' means mount the current directory inside /usr/src/app which is our WORKDIR for the container
